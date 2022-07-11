@@ -13,11 +13,14 @@ module.exports.getUsers = (req, res) => {
 
 // GET /users/:userId - возвращает пользователя по _id
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.id)
-    .then((user) => res.send({ data: user }))
+  User.findById(req.params.id, { runValidators: true })
+    .then((user) => {
+      if (user === null) { return res.status(ERROR_CODE_404).send({ message: 'Пользователь по указанному id не найден' }); }
+      return res.send({ data: user });
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE_404).send({ message: 'Пользователь по указанному id не найден' });
+        res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные при поиске' });
         return;
       }
       res.status(ERROR_CODE_500).send({ message: err.message });
@@ -41,6 +44,7 @@ module.exports.createUser = (req, res) => {
 module.exports.updateUser = (req, res) => {
   User.findOneAndUpdate(req.user._id, { name: req.body.name, about: req.body.about }, {
     new: true,
+    runValidators: true,
   })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
