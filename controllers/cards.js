@@ -15,7 +15,6 @@ module.exports.getCards = (req, res) => {
 module.exports.createCard = (req, res) => {
   Card.create(
     { name: req.body.name, link: req.body.link, owner: req.user._id },
-    { runValidators: true },
   )
     .then((card) => res.send({ data: card }))
     .catch((err) => {
@@ -45,7 +44,7 @@ module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true, runValidators: true },
+    { new: true },
   )
     .then((card) => res.send({ data: card }))
     .catch((err) => {
@@ -66,7 +65,7 @@ module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
-    { new: true, runValidators: true },
+    { new: true },
   )
     .then((card) => res.send({ data: card }))
     .catch((err) => {
