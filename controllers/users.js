@@ -13,7 +13,7 @@ module.exports.getUsers = (req, res) => {
 
 // GET /users/:userId - возвращает пользователя по _id
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.id, { runValidators: true })
+  User.findById(req.params.id, { runValidators: true }).populate('name').populate('about').populate('avatar')
     .then((user) => {
       if (user === null) { return res.status(ERROR_CODE_404).send({ message: 'Пользователь по указанному id не найден' }); }
       return res.send({ data: user });
