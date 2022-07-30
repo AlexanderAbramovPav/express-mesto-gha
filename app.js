@@ -2,9 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
-
-const { createUser, login } = require('./controllers/users');
+const { celebrate, Joi } = require('celebrate');
 const auth = require('./middlewares/auth');
+const { createUser, login } = require('./controllers/users');
+
+const regWebUrl = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 const app = express();
 
@@ -18,12 +20,23 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   if (err) throw err;
 });
 
-app.use(errors());
-
 // роуты, не требующие авторизации,
 // например, регистрация и логин
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().regex(regWebUrl),
+  }),
+}), createUser);
 
 // авторизация
 app.use(auth);
@@ -36,6 +49,8 @@ app.use('/cards', require('./routes/cards'));
 app.use('/*', (req, res) => {
   res.status(404).send({ message: 'Запрос сделан к несуществующей странице' });
 });
+
+app.use(errors());
 
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
