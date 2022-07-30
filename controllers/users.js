@@ -79,7 +79,7 @@ module.exports.updateUser = (req, res, next) => {
 
 // GET /users/me - возвращает информацию о текущем пользователе
 module.exports.getUser = (req, res, next) => {
-  User.findOne({})
+  User.findOne({ _id: req.user._id })
     .then((user) => res.send({ data: user }))
     .catch(next);
 };
