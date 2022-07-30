@@ -23,7 +23,7 @@ module.exports.getUserById = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Переданы некорректные данные при поиске');
+        next(new BadRequestError('Переданы некорректные данные при поиске'));
       }
       next(err);
     });
@@ -47,7 +47,7 @@ module.exports.createUser = (req, res, next) => {
         .then((userData) => res.send({ data: userData }))
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            throw new BadRequestError('Переданы некорректные данные при создании пользователя');
+            next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
           }
           next(err);
         });
@@ -64,10 +64,10 @@ module.exports.updateUser = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные при обновлении профиля');
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       }
       if (err.name === 'CastError') {
-        throw new NotFoundError('Пользователь по указанному id не найден');
+        next(new NotFoundError('Пользователь по указанному id не найден'));
       }
       next(err);
     });
@@ -89,17 +89,17 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные при обновлении аватара');
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
       }
       if (err.name === 'CastError') {
-        throw new NotFoundError('Пользователь по указанному id не найден');
+        next(new NotFoundError('Пользователь по указанному id не найден'));
       }
       next(err);
     });
 };
 
 // Логин пользователя
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -109,6 +109,6 @@ module.exports.login = (req, res) => {
       res.send({ token });
     })
     .catch(() => {
-      throw new UnauthorizedError('Ошибка аутентификации');
+      next(new UnauthorizedError('Ошибка аутентификации'));
     });
 };
