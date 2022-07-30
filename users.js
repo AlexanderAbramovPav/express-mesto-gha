@@ -1,43 +1,114 @@
-const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
+const User = require('../models/user');
 
-const {
-  getUsers, getUserById, createUser, updateUser, updateAvatar, getUser,
-} = require('../controllers/users');
+const BadRequestError = require('../errors/bad-req-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
+const NotFoundError = require('../errors/not-found-err');
+const ConflictError = require('../errors/conflict-err');
 
-const regWebUrl = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+// GET /users — возвращает всех пользователей
+module.exports.getUsers = (req, res, next) => {
+  User.find({})
+    .then((users) => res.send({ data: users }))
+    .catch(next);
+};
 
-router.post('/', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(regWebUrl),
-  }),
-}), createUser);
+// GET /users/:userId - возвращает пользователя по _id
+module.exports.getUserById = (req, res, next) => {
+  User.findById(req.params.id, { runValidators: true }).populate('name').populate('about').populate('avatar')
+    .then((user) => {
+      if (user === null) { throw new NotFoundError('Пользователь по указанному id не найден'); }
+      return res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new BadRequestError('Переданы некорректные данные при поиске');
+      }
+      next(err);
+    });
+};
 
-router.get('/', getUsers);
+// POST /users — создаёт пользователя
+module.exports.createUser = (req, res, next) => {
+  User.findOne({ email: req.body.email })
+    .then((user) => {
+      if (user !== null) {
+        throw new ConflictError('Пользователь с данным email уже существует');
+      }
+      bcrypt.hash(req.body.password, 10)
+        .then((hash) => User.create({
+          name: req.body.name,
+          about: req.body.about,
+          avatar: req.body.avatar,
+          email: req.body.email,
+          password: hash,
+        }))
+        .then((userData) => res.send({ data: userData }))
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            throw new BadRequestError('Переданы некорректные данные при создании пользователя');
+          }
+          next(err);
+        });
+    })
+    .catch(next);
+};
 
-router.get('/me', getUser);
+// PATCH /users/me — обновляет профиль
+module.exports.updateUser = (req, res, next) => {
+  User.findOneAndUpdate(req.user._id, { name: req.body.name, about: req.body.about }, {
+    new: true,
+    runValidators: true,
+  })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError('Переданы некорректные данные при обновлении профиля');
+      }
+      if (err.name === 'CastError') {
+        throw new NotFoundError('Пользователь по указанному id не найден');
+      }
+      next(err);
+    });
+};
 
-router.get('/:id', celebrate({
-  params: Joi.object().keys({
-    id: Joi.string().alphanum().length(24),
-  }),
-}), getUserById);
+// GET /users/me - возвращает информацию о текущем пользователе
+module.exports.getUser = (req, res, next) => {
+  User.findOne({})
+    .then((user) => res.send({ data: user }))
+    .catch(next);
+};
 
-router.patch('/me', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(30),
-  }),
-}), updateUser);
+// PATCH /users/me/avatar — обновляет аватар
+module.exports.updateAvatar = (req, res, next) => {
+  User.findOneAndUpdate(req.user._id, { avatar: req.body.avatar }, {
+    new: true,
+    runValidators: true,
+  })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError('Переданы некорректные данные при обновлении аватара');
+      }
+      if (err.name === 'CastError') {
+        throw new NotFoundError('Пользователь по указанному id не найден');
+      }
+      next(err);
+    });
+};
 
-router.patch('/me/avatar', celebrate({
-  body: Joi.object().keys({
-    avatar: Joi.string().required().regex(regWebUrl),
-  }),
-}), updateAvatar);
+// Логин пользователя
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
 
-module.exports = router;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+
+      res.send({ token });
+    })
+    .catch(() => {
+      throw new UnauthorizedError('Ошибка аутентификации');
+    });
+};
