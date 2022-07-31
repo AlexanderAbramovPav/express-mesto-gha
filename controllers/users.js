@@ -16,7 +16,7 @@ module.exports.getUsers = (req, res, next) => {
 
 // GET /users/:userId - возвращает пользователя по _id
 module.exports.getUserById = (req, res, next) => {
-  User.findById(req.params.id, { runValidators: true }).populate('name').populate('about').populate('avatar')
+  User.findById(req.params.id)
     .then((user) => {
       if (user === null) { throw new NotFoundError('Пользователь по указанному id не найден'); }
       return res.send({ data: user });
@@ -24,8 +24,9 @@ module.exports.getUserById = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные при поиске'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -52,8 +53,9 @@ module.exports.createUser = (req, res, next) => {
         .catch((err) => {
           if (err.name === 'ValidationError') {
             next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
+          } else {
+            next(err);
           }
-          next(err);
         });
     })
     .catch(next);
@@ -69,11 +71,11 @@ module.exports.updateUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         next(new NotFoundError('Пользователь по указанному id не найден'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -94,11 +96,11 @@ module.exports.updateAvatar = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         next(new NotFoundError('Пользователь по указанному id не найден'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
