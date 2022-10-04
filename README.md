@@ -1,31 +1,31 @@
-[![Tests](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-13-sprint.yml/badge.svg)](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-13-sprint.yml) [![Tests](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-14-sprint.yml/badge.svg)](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-14-sprint.yml)
-# Проект Mesto фронтенд + бэкенд
+[![Tests](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-13-sprint.yml/badge.svg)](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-13-sprint.yml ) [![Tests](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-14-sprint.yml/badge.svg)](https://github.com/AlexanderAbramovPraktikum/express-mesto-gha/actions/workflows/tests-14-sprint.yml )
+# Mesto project frontend + backend
 
 
 
-## Настройка бейджей статуса тестов
-Перед началом работы над проектом рекомендуется исправить бейджи, отражающие статус прохождения тестов.
-Для этого замените разметку бейджей на следующий фрагмент, подставив вместо `${имя_пользователя}` и `${имя_репозитория}` соответствующие значения.
+## Setting up test status badges
+Before starting work on the project, it is recommended to correct badges reflecting the status of passing tests.
+To do this, replace the badge markup with the following fragment, substituting the corresponding values instead of `${user_name}` and `${repository name}`.
 
-```
-[![Tests for sprint 13](https://github.com/${имя_пользователя}/${имя репозитория}/actions/workflows/tests-13-sprint.yml/badge.svg)](https://github.com/${имя_пользователя}/${имя репозитория}/actions/workflows/tests-13-sprint.yml) 
+``
+[![Tests for sprint 13](https://github.com /${user_name}/${name репозитория}/actions/workflows/tests-13-sprint.yml/badge.svg)](https://github.com/${имя_пользователя}/${ repository name}/actions/workflows/tests-13-sprint.yml) 
 
-[![Tests for sprint 14](https://github.com/${имя_пользователя}/${имя репозитория}/actions/workflows/tests-14-sprint.yml/badge.svg)](https://github.com/${имя_пользователя}/${имя репозитория}/actions/workflows/tests-14-sprint.yml)
-```
+[![Tests for sprint 14](https://github.com /${user_name}/${name репозитория}/actions/workflows/tests-14-sprint.yml/badge.svg)](https://github.com/${имя_пользователя}/${ repository name}/actions/workflows/tests-14-sprint.yml)
+``
 
 
-## Директории
+## Directories
 
-`/routes` — папка с файлами роутера  
-`/controllers` — папка с файлами контроллеров пользователя и карточки   
-`/models` — папка с файлами описания схем пользователя и карточки  
+`/routes' — folder with router files  
+`/controllers' — folder with the files of the user's controllers and the card   
+`/models' — folder with files describing user schemas and cards  
   
-Остальные директории вспомогательные, создаются при необходимости разработчиком
+The remaining directories are auxiliary, created if necessary by the developer
 
-## Запуск проекта
+## Project launch
 
-`npm run start` — запускает сервер   
-`npm run dev` — запускает сервер с hot-reload
+`npm run start' — starts the server   
+`npm run dev' — starts the server with hot-reload
 
 
 https://github.com/AlexanderAbramovPraktikum/express-mesto-gha.git
